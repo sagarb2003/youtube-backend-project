@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const userSchema = new mongoose.Schema(
   {
@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: [true,"Email is Required"],
+      required: [true, "Email is Required"],
       unique: true,
       lowercase: true,
       trim: true,
@@ -40,7 +40,7 @@ const userSchema = new mongoose.Schema(
     ],
     password: {
       type: String,
-      required: [true,"Password is Required"],
+      required: [true, "Password is Required"],
     },
     refreshToken: {
       type: String,
@@ -49,29 +49,29 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-userSchema.pre("save",async function(next){
-    //if other than password field is updated, so just return next()
-    if(!this.isModified("password")) return next;
-    this.password=await bcrypt.hash(this.password,10);
-    next();
-})
+userSchema.pre("save", async function (next) {
+  //if other than password field is updated, so just return next()
+  if (!this.isModified("password")) return next;
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
 
-userSchema.methods.isPasswordCorrect=async function(password){
-    return await bcrypt.compare(this.password,password);
-}
+userSchema.methods.isPasswordCorrect = async function (password) {
+  return await bcrypt.compare(this.password, password);
+};
 
-userSchema.methods.generateAccessToken=function(){
-    return jwt.sign(
-      {
-        _id: this._id,
-        email: this.email,
-        username: this.username,
-        fullName: this.fullName,
-      },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
-    );
-}
+userSchema.methods.generateAccessToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+      email: this.email,
+      username: this.username,
+      fullName: this.fullName,
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
+  );
+};
 
 userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
