@@ -51,13 +51,13 @@ const userSchema = new mongoose.Schema(
 
 userSchema.pre("save", async function (next) {
   //if other than password field is updated, so just return next()
-  if (!this.isModified("password")) return next;
+  if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
 userSchema.methods.isPasswordCorrect = async function (password) {
-  return await bcrypt.compare(this.password, password);
+  return await bcrypt.compare(password, this.password);
 };
 
 userSchema.methods.generateAccessToken = function () {
