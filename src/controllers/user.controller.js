@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
+import { deleteFromCloudinary } from "../utils/deleteImage.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -198,6 +199,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 });
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
+  //can update either fullName or email
   const { fullName, email } = req.body;
   if (!fullName && !email) {
     throw new ApiError(400, "Enter all required fields to update");
@@ -221,6 +223,11 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   const avatarLocalPath = req.file?.path;
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar Image is Required");
+  }
+  const oldAvatarUrl=req.user.avatar;
+  const deleteOldAvatar = await deleteFromCloudinary(oldAvatarUrl);
+  if (!deleteOldAvatar) {
+    throw new ApiError(500, "Error While Deleting Old Avatar");
   }
   const avatar = await uploadOnCloudinary(avatarLocalPath);
   if (!avatar.url) {
